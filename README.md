@@ -38,3 +38,5 @@ Avvelendosi di un server locale Apache/Nginx + php + composer è possibile avvia
 php artisan serve
 composer install
 ```
+
+L'applicazione sarà poi raggiungibile all'url http://localhost:8000
