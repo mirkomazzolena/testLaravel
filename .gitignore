@@ -1,4 +1,5 @@
 /vendor
 .env
-auth.json
 /.idea
+composer.lock
+.editorconfig

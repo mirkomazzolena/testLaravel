@@ -14,7 +14,7 @@
         <div class="row">
             <div class="col-md-12 mb-3">
                 <label for="lunghezza" class="form-label">Lunghezza della Nave (metri)</label>
-                <input type="text" class="form-control" id="lunghezza" required>
+                <input type="number" step="0.01" min="0.01" class="form-control" id="lunghezza" required>
             </div>
 
             <div class="col-md-12 mb-3">
@@ -69,10 +69,12 @@
             conversioneDaGradiARadianti(document.getElementById('pitch_angle_gradi').value).toFixed(4);
     });
 
+    //Serve per convertire il parametro Angolo di Pitch da gradi a radianti
     function conversioneDaGradiARadianti(valoreInGradi) {
         return valoreInGradi * (Math.PI / 180);
     }
 
+    //All'invio del form viene effettuata la richiesta AJAX inviando i parametri compilati nel form
     document.getElementById('kxpoForm').addEventListener('submit', function(event) {
         event.preventDefault();
         const lunghezza = document.getElementById('lunghezza').value;
@@ -85,20 +87,36 @@
             vertical_shift: vertical_shift
         })
             .then(response => {
-                document.getElementById('thTabella').innerText = 'Risultato del Calcolo KXPO';
+                //Se il risultato è di tipo null viene segnalato l'errore, altrimenti viene stampato il risultato
+                if (response.data.kxpo !== null) {
+                    document.getElementById('thTabella').innerText = 'Risultato del Calcolo KXPO';
 
-                const row = document.createElement('tr');
-                const cell = document.createElement('td');
-                cell.innerHTML = '<span class="text-success">' + response.data.kxpo + '</span>';
-                row.appendChild(cell);
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.innerHTML = '<span class="text-success">' + response.data.kxpo + '</span>';
+                    row.appendChild(cell);
 
-                const tbody = document.getElementById('tabellaRisultato').querySelector('tbody');
-                tbody.innerHTML = '';
-                tbody.appendChild(row);
+                    const tbody = document.getElementById('tabellaRisultato').querySelector('tbody');
+                    tbody.innerHTML = '';
+                    tbody.appendChild(row);
+                } else {
+                    document.getElementById('thTabella').innerText = 'Errore!';
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.innerHTML = '<span class="text-danger">Il risultato non è valido.</span>';
+                    row.appendChild(cell);
+
+                    const tbody = document.getElementById('tabellaRisultato').querySelector('tbody');
+                    tbody.innerHTML = '';
+                    tbody.appendChild(row);
+
+                    document.getElementById('cg_h').value = response.data.cg_h;
+                }
 
                 document.getElementById('cg_h').value = response.data.cg_h;
             })
             .catch(error => {
+                //Se lo stato di errore è 422 vengono stampati gli errori di validazione, altrimenti viene stampato un errore generico
                 if (error.response.status === 422) {
                     const messaggiDiErrore = Object.keys(error.response.data.errori)
                         .flatMap(key => error.response.data.errori[key]);
@@ -114,6 +132,15 @@
                         row.appendChild(cell);
                         tbody.appendChild(row);
                     });
+                } else {
+                    document.getElementById('thTabella').innerText = 'Errore!';
+                    const tbody = document.getElementById('tabellaRisultato').querySelector('tbody');
+                    tbody.innerHTML = '';
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.innerHTML = '<span class="text-danger">Si è verificato un errore inaspettato</span>';
+                    row.appendChild(cell);
+                    tbody.appendChild(row);
                 }
             });
     });
