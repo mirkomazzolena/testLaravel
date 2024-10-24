@@ -7,11 +7,15 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     && docker-php-ext-install pdo_mysql zip
 
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
+
 RUN a2enmod rewrite
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-WORKDIR /var/www
+COPY apache.conf /etc/apache2/sites-available/000-default.conf
 COPY . /var/www
 
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN chown -R www-data:www-data /var/www
+
+WORKDIR /var/www
